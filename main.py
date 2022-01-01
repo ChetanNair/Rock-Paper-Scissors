@@ -25,9 +25,11 @@ with mp_hands.Hands(
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
         handNumber = 0
-        count = 0
         hand_landmarks = []
+        count = 0
+        flag = False
         if results.multi_hand_landmarks:
+            flag = True
             for hand in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
                     image,
@@ -63,7 +65,17 @@ with mp_hands.Hands(
                 handNumber += 1
         # Flip the image horizontally for a selfie-view display.
         image = cv2.flip(image, 1)
-        cv2.putText(image, str(count), (45, 375),
+        if count in [0, 2, 5] and flag:
+            if count == 0:
+                display = "Rock"
+            elif count == 2:
+                display = "Scissors"
+            elif count == 5:
+                display = "Paper"
+        else:
+            display = "Invalid"
+
+        cv2.putText(image, display, (45, 375),
                     cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 0), 10)
         cv2.imshow('Rock, Paper, Scissors', image)
         if cv2.waitKey(1) & 0xFF == 27:
