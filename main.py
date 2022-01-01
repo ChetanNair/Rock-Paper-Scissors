@@ -65,15 +65,14 @@ with mp_hands.Hands(
                 handNumber += 1
         # Flip the image horizontally for a selfie-view display.
         image = cv2.flip(image, 1)
-        if count in [0, 2, 5] and flag:
-            if count == 0:
-                display = "Rock"
-            elif count == 2:
-                display = "Scissors"
-            elif count == 5:
-                display = "Paper"
+
+        display_values = ["Rock", "Invalid",
+                          "Scissors", "Invalid", "Invalid", "Paper"]
+
+        if count <= 5 and flag:
+            display = display_values[count]
         else:
-            display = "Invalid"
+            display = display_values[1]
 
         cv2.putText(image, display, (45, 375),
                     cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 0), 10)
