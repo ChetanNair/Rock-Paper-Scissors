@@ -8,28 +8,28 @@ import statistics as st
 def calculate_winner(cpu_choice, player_choice):
 
     if player_choice == "Invalid":
-        return "Invalid"
+        return "Invalid!"
 
     if player_choice == cpu_choice:
-        return "Tie"
+        return "Tie!"
 
     elif player_choice == "Rock" and cpu_choice == "Scissors":
-        return "User"
+        return "You win!"
 
     elif player_choice == "Rock" and cpu_choice == "Paper":
-        return "Computer"
+        return "CPU wins!"
 
     elif player_choice == "Scissors" and cpu_choice == "Rock":
-        return "Computer"
+        return "CPU wins!"
 
     elif player_choice == "Scissors" and cpu_choice == "Paper":
-        return "User"
+        return "You win!"
 
     elif player_choice == "Paper" and cpu_choice == "Rock":
-        return "User"
+        return "You win!"
 
     elif player_choice == "Paper" and cpu_choice == "Scissors":
-        return "Computer"
+        return "CPU wins!"
 
 
 mp_drawing = mp.solutions.drawing_utils
@@ -40,6 +40,8 @@ webcam = cv2.VideoCapture(0)
 
 cpu_choices = ["Rock", "Paper", "Scissors"]
 cpu_choice = "Nothing"
+cpu_score, player_score = 0, 0
+winner_colour = (0, 255, 0)
 player_choice = "Nothing"
 hand_valid = False
 display_values = ["Rock", "Invalid", "Scissors", "Invalid", "Invalid", "Paper"]
@@ -75,9 +77,19 @@ with mp_hands.Hands(
             isCounting = True
 
             if player_choice != "Nothing" and not hand_valid:
+
                 hand_valid = True
                 cpu_choice = random.choice(cpu_choices)
                 winner = calculate_winner(cpu_choice, player_choice)
+
+                if winner == "You win!":
+                    player_score += 1
+                    winner_colour = (255, 0, 0)
+                elif winner == "CPU wins!":
+                    cpu_score += 1
+                    winner_colour = (0, 0, 255)
+                elif winner == "Invalid!" or winner == "Tie!":
+                    winner_colour = (0, 255, 0)
 
             for hand in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
@@ -137,12 +149,27 @@ with mp_hands.Hands(
             print("Stats Error")
             continue
 
+        cv2.putText(image, "You", (90, 75),
+                    cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5)
+
+        cv2.putText(image, "CPU", (1050, 75),
+                    cv2.FONT_HERSHEY_DUPLEX, 2, (0, 0, 255), 5)
+
         cv2.putText(image, player_choice, (45, 375),
-                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 10)
-        cv2.putText(image, cpu_choice, (700, 375),
-                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 10)
-        cv2.putText(image, winner, (400, 600),
-                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 10)
+                    cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5)
+
+        cv2.putText(image, cpu_choice, (1000, 375),
+                    cv2.FONT_HERSHEY_DUPLEX, 2, (0, 0, 255), 5)
+
+        cv2.putText(image, winner, (530, 650),
+                    cv2.FONT_HERSHEY_DUPLEX, 2, winner_colour, 5)
+
+        cv2.putText(image, str(player_score), (145, 200),
+                    cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5)
+
+        cv2.putText(image, str(cpu_score), (1100, 200),
+                    cv2.FONT_HERSHEY_DUPLEX, 2, (0, 0, 255), 5)
+
         cv2.imshow('Rock, Paper, Scissors', image)
 
         if cv2.waitKey(1) & 0xFF == 27:
