@@ -1,5 +1,35 @@
 import cv2
 import mediapipe as mp
+import random
+from collections import deque
+import statistics as st
+
+
+def calculate_winner(cpu_choice, player_choice):
+
+    if player_choice == "Invalid":
+        return "Invalid"
+
+    if player_choice == cpu_choice:
+        return "Tie"
+
+    elif player_choice == "Rock" and cpu_choice == "Scissors":
+        return "User"
+
+    elif player_choice == "Rock" and cpu_choice == "Paper":
+        return "Computer"
+
+    elif player_choice == "Scissors" and cpu_choice == "Rock":
+        return "Computer"
+
+    elif player_choice == "Scissors" and cpu_choice == "Paper":
+        return "User"
+
+    elif player_choice == "Paper" and cpu_choice == "Rock":
+        return "User"
+
+    elif player_choice == "Paper" and cpu_choice == "Scissors":
+        return "Computer"
 
 
 mp_drawing = mp.solutions.drawing_utils
@@ -7,6 +37,15 @@ mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
 webcam = cv2.VideoCapture(0)
+
+cpu_choices = ["Rock", "Paper", "Scissors"]
+cpu_choice = "Nothing"
+player_choice = "Nothing"
+hand_valid = False
+display_values = ["Rock", "Invalid", "Scissors", "Invalid", "Invalid", "Paper"]
+winner = "None"
+de = deque(['Nothing'] * 5, maxlen=5)
+
 with mp_hands.Hands(
         model_complexity=0,
         min_detection_confidence=0.5,
@@ -15,8 +54,10 @@ with mp_hands.Hands(
     while webcam.isOpened():
         success, image = webcam.read()
         if not success:
-            print("Camera not working")
+            print("Camera isn't working")
             continue
+
+        image = cv2.flip(image, 1)
 
         image.flags.writeable = False
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -24,12 +65,20 @@ with mp_hands.Hands(
 
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
         handNumber = 0
         hand_landmarks = []
+        isCounting = False
         count = 0
-        flag = False
+
         if results.multi_hand_landmarks:
-            flag = True
+            isCounting = True
+
+            if player_choice != "Nothing" and not hand_valid:
+                hand_valid = True
+                cpu_choice = random.choice(cpu_choices)
+                winner = calculate_winner(cpu_choice, player_choice)
+
             for hand in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
                     image,
@@ -39,44 +88,63 @@ with mp_hands.Hands(
                     mp_drawing_styles.get_default_hand_connections_style())
 
                 label = results.multi_handedness[handNumber].classification[0].label
+
                 for id, landmark in enumerate(hand.landmark):
-                    imgH, imgW, imgC = image.shape  # height, width, channel for image
+                    imgH, imgW, imgC = image.shape
                     xPos, yPos = int(landmark.x *
                                      imgW), int(landmark.y * imgH)
+
                     hand_landmarks.append([id, xPos, yPos, label])
 
                 # Index Finger
                 if hand_landmarks[8][2] < hand_landmarks[6][2]:
                     count += 1
+
                 # Middle Finger
                 if hand_landmarks[12][2] < hand_landmarks[10][2]:
                     count += 1
+
                 # Ring Finger
                 if hand_landmarks[16][2] < hand_landmarks[14][2]:
                     count += 1
+
                 # Pinky Finger
                 if hand_landmarks[20][2] < hand_landmarks[18][2]:
                     count += 1
+
                 # Thumb
                 if hand_landmarks[4][3] == "Left" and hand_landmarks[4][1] > hand_landmarks[3][1]:
                     count += 1
                 elif hand_landmarks[4][3] == "Right" and hand_landmarks[4][1] < hand_landmarks[3][1]:
                     count += 1
+
                 handNumber += 1
-        # Flip the image horizontally for a selfie-view display.
-        image = cv2.flip(image, 1)
-
-        display_values = ["Rock", "Invalid",
-                          "Scissors", "Invalid", "Invalid", "Paper"]
-
-        if count <= 5 and flag:
-            display = display_values[count]
         else:
-            display = display_values[1]
+            hand_valid = False
 
-        cv2.putText(image, display, (45, 375),
-                    cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 0, 0), 10)
+        if isCounting and count <= 5:
+            player_choice = display_values[count]
+        elif isCounting:
+            player_choice = "Invalid"
+        else:
+            player_choice = "Nothing"
+
+        de.appendleft(player_choice)
+
+        try:
+            player_choice = st.mode(de)
+        except st.StatisticsError:
+            print("Stats Error")
+            continue
+
+        cv2.putText(image, player_choice, (45, 375),
+                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 10)
+        cv2.putText(image, cpu_choice, (700, 375),
+                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 10)
+        cv2.putText(image, winner, (400, 600),
+                    cv2.FONT_HERSHEY_SIMPLEX, 3, (255, 0, 0), 10)
         cv2.imshow('Rock, Paper, Scissors', image)
+
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
