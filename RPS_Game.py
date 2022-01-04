@@ -4,6 +4,8 @@ import random
 from collections import deque
 import statistics as st
 
+# Determines the winner of each round when passed the computer's and player's moves
+
 
 def calculate_winner(cpu_choice, player_choice):
 
@@ -32,10 +34,12 @@ def calculate_winner(cpu_choice, player_choice):
         return "CPU wins!"
 
 
+# Loading in from mediapipe
 mp_drawing = mp.solutions.drawing_utils
 mp_drawing_styles = mp.solutions.drawing_styles
 mp_hands = mp.solutions.hands
 
+# Using OpenCV to capture from the webcam
 webcam = cv2.VideoCapture(0)
 
 cpu_choices = ["Rock", "Paper", "Scissors"]
@@ -73,15 +77,18 @@ with mp_hands.Hands(
         isCounting = False
         count = 0
 
+        # If at least one hand is detected this will execute.
         if results.multi_hand_landmarks:
             isCounting = True
 
+            # hand_valid acts as a flag so that the CPU does not "play" a move multiple times.
             if player_choice != "Nothing" and not hand_valid:
 
                 hand_valid = True
                 cpu_choice = random.choice(cpu_choices)
                 winner = calculate_winner(cpu_choice, player_choice)
 
+                # Incrementing scores of player or CPU
                 if winner == "You win!":
                     player_score += 1
                     winner_colour = (255, 0, 0)
@@ -91,6 +98,7 @@ with mp_hands.Hands(
                 elif winner == "Invalid!" or winner == "Tie!":
                     winner_colour = (0, 255, 0)
 
+            # Drawing the hand skeletons
             for hand in results.multi_hand_landmarks:
                 mp_drawing.draw_landmarks(
                     image,
@@ -99,14 +107,20 @@ with mp_hands.Hands(
                     mp_drawing_styles.get_default_hand_landmarks_style(),
                     mp_drawing_styles.get_default_hand_connections_style())
 
+                # Figures out whether it's a left hand or right hand in frame
                 label = results.multi_handedness[handNumber].classification[0].label
 
+                # Converts unit-less hand landmarks into pixel counts
                 for id, landmark in enumerate(hand.landmark):
                     imgH, imgW, imgC = image.shape
                     xPos, yPos = int(landmark.x *
                                      imgW), int(landmark.y * imgH)
 
                     hand_landmarks.append([id, xPos, yPos, label])
+
+                # Coordinates are used to determine whether a finger is being held up or not
+                # This is done by detemining whether the tip of the finger is above or below the base of the finger
+                # For the thumb it determines whether the tip is to the left or right (depending on whether it's their right or left hand)
 
                 # Index Finger
                 if hand_landmarks[8][2] < hand_landmarks[6][2]:
@@ -134,6 +148,7 @@ with mp_hands.Hands(
         else:
             hand_valid = False
 
+        # The number of fingers being held up is used to determine which move is made by the player
         if isCounting and count <= 5:
             player_choice = display_values[count]
         elif isCounting:
@@ -141,14 +156,17 @@ with mp_hands.Hands(
         else:
             player_choice = "Nothing"
 
+        # Adding the detected move to the left of the double-ended queue
         de.appendleft(player_choice)
 
+        # Instead of using the first move detected, the mode is taken so that it provides a more reliable move detection.
         try:
             player_choice = st.mode(de)
         except st.StatisticsError:
             print("Stats Error")
             continue
 
+        # Overlaying text on the webcam input to convey the score, move and round winner.
         cv2.putText(image, "You", (90, 75),
                     cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5)
 
@@ -172,6 +190,7 @@ with mp_hands.Hands(
 
         cv2.imshow('Rock, Paper, Scissors', image)
 
+        # Allows for the program to be closed by pressing the Escape key
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
