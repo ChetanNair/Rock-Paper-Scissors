@@ -25,7 +25,7 @@ python RPS_Game.py
 
 ## Detailed Explanation
 
-Using OpenCV, the webcam input is read in frame by frame. The meediapipe library's hand module is called and isolates the hand's skeletal structure if it is in frame. An alogrithm decides whether the player's move is rock, paper or scissors using the skeletal coordinates from the module and the computer also plays a move. The user then needs to move their hand out of the frame and back in to play the next round. The winner is calculated each time the hand enters back into the frame after leaving and a running tally is maintained.
+Using OpenCV, the webcam input is read in frame by frame. The mediapipe library's hand module is called and isolates the hand's skeletal structure if it is in frame. An alogrithm decides whether the player's move is rock, paper or scissors using the skeletal coordinates from the module and the computer also plays a move. The user then needs to move their hand out of the frame and back in to play the next round. The winner is calculated each time the hand enters back into the frame after leaving and a running tally is maintained.
 
 ## Author
 
