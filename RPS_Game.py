@@ -4,10 +4,10 @@ import random
 from collections import deque
 import statistics as st
 
-# Determines the winner of each round when passed the computer's and player's moves
-
 
 def calculate_winner(cpu_choice, player_choice):
+
+    # Determines the winner of each round when passed the computer's and player's moves
 
     if player_choice == "Invalid":
         return "Invalid!"
@@ -32,6 +32,36 @@ def calculate_winner(cpu_choice, player_choice):
 
     elif player_choice == "Paper" and cpu_choice == "Scissors":
         return "CPU wins!"
+
+
+def compute_fingers(hand_landmarks, count):
+
+    # Coordinates are used to determine whether a finger is being held up or not
+    # This is done by detemining whether the tip of the finger is above or below the base of the finger
+    # For the thumb it determines whether the tip is to the left or right (depending on whether it's their right or left hand)
+
+    # Index Finger
+    if hand_landmarks[8][2] < hand_landmarks[6][2]:
+        count += 1
+
+    # Middle Finger
+    if hand_landmarks[12][2] < hand_landmarks[10][2]:
+        count += 1
+
+    # Ring Finger
+    if hand_landmarks[16][2] < hand_landmarks[14][2]:
+        count += 1
+
+    # Pinky Finger
+    if hand_landmarks[20][2] < hand_landmarks[18][2]:
+        count += 1
+
+    # Thumb
+    if hand_landmarks[4][3] == "Left" and hand_landmarks[4][1] > hand_landmarks[3][1]:
+        count += 1
+    elif hand_landmarks[4][3] == "Right" and hand_landmarks[4][1] < hand_landmarks[3][1]:
+        count += 1
+    return count
 
 
 # Loading in from mediapipe
@@ -118,31 +148,8 @@ with mp_hands.Hands(
 
                     hand_landmarks.append([id, xPos, yPos, label])
 
-                # Coordinates are used to determine whether a finger is being held up or not
-                # This is done by detemining whether the tip of the finger is above or below the base of the finger
-                # For the thumb it determines whether the tip is to the left or right (depending on whether it's their right or left hand)
-
-                # Index Finger
-                if hand_landmarks[8][2] < hand_landmarks[6][2]:
-                    count += 1
-
-                # Middle Finger
-                if hand_landmarks[12][2] < hand_landmarks[10][2]:
-                    count += 1
-
-                # Ring Finger
-                if hand_landmarks[16][2] < hand_landmarks[14][2]:
-                    count += 1
-
-                # Pinky Finger
-                if hand_landmarks[20][2] < hand_landmarks[18][2]:
-                    count += 1
-
-                # Thumb
-                if hand_landmarks[4][3] == "Left" and hand_landmarks[4][1] > hand_landmarks[3][1]:
-                    count += 1
-                elif hand_landmarks[4][3] == "Right" and hand_landmarks[4][1] < hand_landmarks[3][1]:
-                    count += 1
+                # Number of fingers held up are counted.
+                count = compute_fingers(hand_landmarks, count)
 
                 handNumber += 1
         else:
