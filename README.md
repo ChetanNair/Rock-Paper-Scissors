@@ -13,7 +13,8 @@ Ties contribute zero points while invalid hand signs are reported as invalid by 
 
 ## Dependencies
 
-Mediapipe, OpenCV.
+* [Mediapipe](https://google.github.io/mediapipe/)
+* OpenCV.
 
 ## Program Execution
 
