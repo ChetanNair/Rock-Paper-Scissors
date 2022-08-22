@@ -2,9 +2,9 @@
 
 ## Overview
 
-The user can play a game of rock, paper, scissors against the computer.
-Uses video input from the webcam to capture the user's move (rock, paper or scissors)
-The computer also generates its move.
+- The user can play a game of rock, paper, scissors against the computer.
+- Uses video input from the webcam to capture the user's move (rock, paper or scissors).
+- The computer also generates its move.
 
 The winner is calculated and the scores are incremented appropriately.
 Ties contribute zero points while invalid hand signs are reported as invalid by the program.
