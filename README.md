@@ -19,7 +19,7 @@ Ties contribute zero points while invalid hand signs are reported as invalid by 
 ## Program Execution
 
 ```
-python RPS_Game.py
+python3 RPS_Game.py
 ```
 
 \*\* Must allow the program to use webcam.
